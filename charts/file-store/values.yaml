@@ -1,0 +1,15 @@
+NatsStreaming:
+  image: nats-streaming:0.14.2-linux
+  imagePullPolicy: IfNotPresent
+
+  replicas: 3
+
+  limits:
+    cpu: 1
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+  pvc:
+    storageSize: 1Gi

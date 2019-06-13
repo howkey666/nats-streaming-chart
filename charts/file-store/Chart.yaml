@@ -1,0 +1,3 @@
+name: catalogue-event-bus
+version: v0.1.0
+description: NATS Streaming as event bus for catalogue

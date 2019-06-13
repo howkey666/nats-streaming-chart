@@ -1,0 +1,60 @@
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  labels:
+    app: {{ template "nats-streaming-server.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+  name: {{ template "nats-streaming-server.fullname" . }}
+spec:
+  serviceName:  {{ template "nats-streaming-server.name" . }}
+  replicas: {{ .Values.NatsStreaming.replicas }}
+  selector:
+    matchLabels:
+      app:  {{ template "nats-streaming-server.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app:  {{ template "nats-streaming-server.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: {{ .Values.NatsStreaming.image }}
+        imagePullPolicy: {{ .Values.NatsStreaming.imagePullPolicy }}
+        args:
+          - -D
+          - -m=8222
+          - -st=FILE
+          - --dir=/nats-datastore
+          - -ft_group={{ template "nats-streaming-server.fullname" . }}
+          - --cluster=nats://0.0.0.0:6222
+          - --routes=nats://{{ template "nats-streaming-server.fullname" . }}:6222
+          - --cluster_advertise=$(POD_NAME).{{ template "nats-streaming-server.fullname" . }}.$(POD_NAMESPACE).svc
+        limits:
+          cpu: {{ .Values.NatsStreaming.limits.cpu }}
+          memory: {{ .Values.NatsStreaming.limits.memory }}
+        requests:
+          cpu: {{ .Values.NatsStreaming.requests.cpu }}
+          memory: {{ .Values.NatsStreaming.requests.memory }}
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - mountPath: /nats-datastore
+          name: {{ template "nats-streaming-server.name" . }}
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ template "nats-streaming-server.name" . }}
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.NatsStreaming.pvc.storageSize }}
