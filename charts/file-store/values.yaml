@@ -1,5 +1,5 @@
 NatsStreaming:
-  image: nats-streaming:0.14.2-linux
+  image: nats-streaming:0.15.1-linux
   imagePullPolicy: IfNotPresent
 
   replicas: 3
